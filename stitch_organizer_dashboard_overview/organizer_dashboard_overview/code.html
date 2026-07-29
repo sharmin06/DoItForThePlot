@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Organizer Dashboard Overview</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22", // Deep charcoal/black
+                        "surface-dark": "#192b33", // Slightly lighter for cards
+                        "surface-highlight": "#233c48", // Even lighter for active states
+                        "text-secondary": "#92b7c9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+        }
+
+        .donut-chart {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#13a4ec 0% 0%, #233c48 0);
+            /* Dynamic update via JS */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .donut-chart::after {
+            content: "";
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            background-color: #192b33;
+            border-radius: 50%;
+        }
+
+        .donut-content {
+            position: absolute;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white pb-24">
+
+    <!-- Top App Bar -->
+    <div
+        class="flex items-center px-4 py-4 justify-between sticky top-0 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <div id="userAvatar" class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-white/10"
+                    style='background-image: url("");'></div>
+                <div class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-dark">
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs text-text-secondary font-medium">Organizer</span>
+                <span class="text-sm font-bold text-white leading-none">SortMyScene</span>
+            </div>
+        </div>
+        <button onclick="DB.logout()"
+            class="flex items-center justify-center size-10 rounded-full bg-surface-dark text-white hover:bg-surface-highlight transition-colors"
+            title="Logout">
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+        </button>
+    </div>
+
+    <!-- Greeting Headline -->
+    <div class="px-4 pt-2 pb-6">
+        <h2 class="text-3xl font-bold text-white tracking-tight">Hello, <span id="userName">...</span></h2>
+        <p class="text-text-secondary text-sm mt-1">Here's what's happening today.</p>
+    </div>
+
+    <!-- Global Stats -->
+    <div class="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
+        <div
+            class="flex min-w-[160px] flex-1 flex-col gap-3 rounded-xl p-5 bg-surface-dark border border-white/5 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="p-1.5 rounded-md bg-primary/10 text-primary"><span
+                        class="material-symbols-outlined text-[20px]">calendar_month</span></div>
+                <p class="text-text-secondary text-sm font-medium">Active Events</p>
+            </div>
+            <p id="statEvents" class="text-white text-3xl font-bold tracking-tight">0</p>
+        </div>
+        <div
+            class="flex min-w-[160px] flex-1 flex-col gap-3 rounded-xl p-5 bg-surface-dark border border-white/5 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="p-1.5 rounded-md bg-green-500/10 text-green-500"><span
+                        class="material-symbols-outlined text-[20px]">confirmation_number</span></div>
+                <p class="text-text-secondary text-sm font-medium">Tickets Sold</p>
+            </div>
+            <div class="flex items-end gap-2">
+                <p id="statTickets" class="text-white text-3xl font-bold tracking-tight">0</p>
+                <span class="text-green-500 text-xs font-bold mb-1.5 flex items-center"><span
+                        class="material-symbols-outlined text-[14px]">arrow_upward</span> 12%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Events Feed -->
+    <div id="eventsContainer" class="flex flex-col gap-8 mt-8">
+        <!-- Events will be injected here -->
+    </div>
+
+    <!-- Create Event FAB -->
+    <button onclick="openCreateModal()"
+        class="fixed bottom-24 right-4 z-30 flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-[0_4px_14px_rgba(19,164,236,0.4)] hover:shadow-[0_6px_20px_rgba(19,164,236,0.6)] hover:bg-primary/90 transition-all active:scale-95 group">
+        <span class="material-symbols-outlined text-[32px] transition-transform group-hover:rotate-90">add</span>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <div
+        class="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-white/5 pb-6 pt-3 px-6 z-40 backdrop-blur-lg bg-opacity-95">
+        <div class="flex items-center justify-between max-w-md mx-auto">
+            <button class="flex flex-col items-center gap-1 text-primary w-16">
+                <span class="material-symbols-outlined text-[26px] fill-current">dashboard</span>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">event</span>
+                <span class="text-[10px] font-medium">Events</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">bar_chart</span>
+                <span class="text-[10px] font-medium">Feedback</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">settings</span>
+                <span class="text-[10px] font-medium">Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="createModal"
+        class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+            class="bg-surface-dark w-full max-w-md rounded-3xl overflow-hidden border border-white/10 shadow-2xl transform transition-all scale-100">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-white">Create New Event</h3>
+                    <button onclick="closeCreateModal()" class="text-text-secondary hover:text-white"><span
+                            class="material-symbols-outlined">close</span></button>
+                </div>
+
+                <form onsubmit="handleCreateEvent(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-text-secondary mb-1">Event Name</label>
+                        <input type="text" name="title" required
+                            class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0 placeholder:text-text-secondary/50"
+                            placeholder="e.g. Summer Music Fest">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-text-secondary mb-1">Date</label>
+                            <input type="date" name="date" required
+                                class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-text-secondary mb-1">Time</label>
+                            <input type="time" name="time" required
+                                class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-text-secondary mb-1">Location</label>
+                        <input type="text" name="location" required
+                            class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0"
+                            placeholder="e.g. City Arena">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-text-secondary mb-1">Capacity</label>
+                            <input type="number" name="capacity" required
+                                class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0"
+                                placeholder="500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-text-secondary mb-1">Price ($)</label>
+                            <input type="number" name="price" required
+                                class="w-full bg-surface-highlight border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-0"
+                                placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20">
+                            Publish Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/db.js"></script>
+    <script>
+        // Auth Check
+        const currentUser = DB.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'organizer') {
+            window.location.href = '../../auth.html';
+        }
+
+        // Init Dashboard
+        document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+        document.getElementById('userAvatar').style.backgroundImage = `url('${currentUser.avatar}')`;
+
+        // Render Events
+        function renderDashboard() {
+            const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+            const registrations = JSON.parse(localStorage.getItem(DB.KEYS.REGISTRATIONS));
+
+            // Stats
+            document.getElementById('statEvents').textContent = events.length;
+            const totalSold = events.reduce((acc, ev) => acc + (ev.tickets_sold || 0), 0);
+            document.getElementById('statTickets').textContent = totalSold;
+
+            // Render List
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '';
+
+            events.forEach(event => {
+                const entryRate = Math.round(((event.checked_in || 0) / (event.tickets_sold || 1)) * 100);
+
+                const html = `
+                <div class="px-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white">${event.title}</h3>
+                        <span class="text-text-secondary text-sm">${event.date} • ${event.time}</span>
+                    </div>
+                    
+                    <div class="rounded-2xl bg-surface-dark overflow-hidden border border-white/5 shadow-lg relative group">
+                        <!-- Header Image -->
+                        <div class="h-32 w-full bg-cover bg-center relative" style="background-image: url('${event.image || 'https://via.placeholder.com/400'}');">
+                            <div class="absolute inset-0 bg-gradient-to-t from-surface-dark to-transparent"></div>
+                            <div class="absolute bottom-4 left-4">
+                                <h4 class="text-white text-xl font-bold leading-tight shadow-black drop-shadow-md">${event.title}</h4>
+                                <p class="text-text-secondary text-sm mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                    ${event.location}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="p-5 pt-2">
+                            <div class="flex items-center justify-between gap-6">
+                                <div class="flex-1 space-y-4">
+                                    <div>
+                                        <div class="flex justify-between text-xs mb-1.5">
+                                            <span class="text-text-secondary">Capacity Status</span>
+                                            <span class="text-white font-mono">${event.tickets_sold}/${event.capacity}</span>
+                                        </div>
+                                        <div class="w-full bg-surface-highlight rounded-full h-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width: ${(event.tickets_sold / event.capacity) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="shrink-0 flex flex-col items-center gap-2">
+                                    <div class="donut-chart" style="background: conic-gradient(#13a4ec ${entryRate}%, #233c48 0);">
+                                        <div class="donut-content"><span class="text-sm font-bold text-white">${entryRate}%</span></div>
+                                    </div>
+                                    <span class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">Entry Rate</span>
+                                </div>
+                            </div>
+
+                            <button onclick="window.location.href='../scanner.html'" class="mt-6 w-full py-3 bg-surface-highlight hover:bg-surface-hover text-primary font-semibold rounded-xl flex items-center justify-center gap-2 transition-all">
+                                <span class="material-symbols-outlined">qr_code_scanner</span>
+                                Quick Scan Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+                container.innerHTML += html;
+            });
+        }
+
+        renderDashboard();
+
+        // Modal Logic
+        const modal = document.getElementById('createModal');
+        function openCreateModal() { modal.classList.remove('hidden'); }
+        function closeCreateModal() { modal.classList.add('hidden'); }
+
+        function handleCreateEvent(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            const newEvent = {
+                id: 'e' + Date.now(),
+                title: formData.get('title'),
+                date: formData.get('date'),
+                time: formData.get('time'),
+                location: formData.get('location'),
+                capacity: parseInt(formData.get('capacity')),
+                price: parseInt(formData.get('price')),
+                tickets_sold: 0,
+                checked_in: 0,
+                image: 'https://images.unsplash.com/photo-1459749411177-2a2965bda36c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZXZlbnR8ZW58MHx8MHx8fDA%3D' // Random placeholder
+            };
+
+            const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+            events.unshift(newEvent); // Add to top
+            localStorage.setItem(DB.KEYS.EVENTS, JSON.stringify(events));
+
+            closeCreateModal();
+            e.target.reset();
+            renderDashboard();
+        }
+    </script>
+
+</body>
+
+</html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Organizer Dashboard Overview</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22", // Deep charcoal/black
+                        "surface-dark": "#192b33", // Slightly lighter for cards
+                        "surface-highlight": "#233c48", // Even lighter for active states
+                        "text-secondary": "#92b7c9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "md": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for horizontal scrolling if needed */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Donut Chart CSS implementation */
+        .donut-chart {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#13a4ec 24%, #233c48 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-chart::after {
+            content: "";
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            background-color: #192b33;
+            /* Matches card bg */
+            border-radius: 50%;
+        }
+
+        .donut-content {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white pb-24">
+    <!-- Top App Bar -->
+    <div
+        class="flex items-center px-4 py-4 justify-between sticky top-0 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-white/10"
+                    data-alt="User profile avatar of Alex"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCiHIXaWpBURrkGOT5SQz_Ii6rHPdb0kz9yRbRueqMNTvyuBM3JbnkY5uAMz25vAD384Y6hbvyqs6Uiroe8e_YTgDleE-7dLVI4MdGNxQGPkZwjpJ8qTLokeJADh5UtwfFdlK29-GfBPD51QJmr9WKqi1N13sNz-B97vZuRRXU_sTWuM9nIWwSBMderTg_tzHoTdEZf6DfC--7FELuzuL6EECkXTUDydGLEHGFY89m_JvMaf3VMv5EccBIM57HlDL1BVPRpmHF_A5E");'>
+                </div>
+                <div class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background-dark">
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-xs text-text-secondary font-medium">Organizer</span>
+                <span class="text-sm font-bold text-white leading-none">SortMyScene</span>
+            </div>
+        </div>
+        <button
+            class="flex items-center justify-center size-10 rounded-full bg-surface-dark text-white hover:bg-surface-highlight transition-colors relative">
+            <span class="material-symbols-outlined text-[24px]">notifications</span>
+            <span class="absolute top-2 right-2 size-2 bg-primary rounded-full"></span>
+        </button>
+    </div>
+    <!-- Greeting Headline -->
+    <div class="px-4 pt-2 pb-6">
+        <h2 class="text-3xl font-bold text-white tracking-tight">Hello, Alex</h2>
+        <p class="text-text-secondary text-sm mt-1">Here's what's happening today.</p>
+    </div>
+    <!-- Global Stats -->
+    <div class="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
+        <div
+            class="flex min-w-[160px] flex-1 flex-col gap-3 rounded-xl p-5 bg-surface-dark border border-white/5 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="p-1.5 rounded-md bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                </div>
+                <p class="text-text-secondary text-sm font-medium">Active Events</p>
+            </div>
+            <p class="text-white text-3xl font-bold tracking-tight">3</p>
+        </div>
+        <div
+            class="flex min-w-[160px] flex-1 flex-col gap-3 rounded-xl p-5 bg-surface-dark border border-white/5 shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="p-1.5 rounded-md bg-green-500/10 text-green-500">
+                    <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+                </div>
+                <p class="text-text-secondary text-sm font-medium">Tickets Sold</p>
+            </div>
+            <div class="flex items-end gap-2">
+                <p class="text-white text-3xl font-bold tracking-tight">145</p>
+                <span class="text-green-500 text-xs font-bold mb-1.5 flex items-center">
+                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span> 12%
+                </span>
+            </div>
+        </div>
+    </div>
+    <!-- Active Event (Hero Card) -->
+    <div class="px-4 mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white">Next Event</h3>
+            <button class="text-primary text-sm font-medium hover:text-primary/80 transition-colors">View All</button>
+        </div>
+        <div class="rounded-2xl bg-surface-dark overflow-hidden border border-white/5 shadow-lg relative group">
+            <!-- Pulsing Live Indicator -->
+            <div
+                class="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span class="text-[10px] font-bold text-white uppercase tracking-wide">Live</span>
+            </div>
+            <!-- Header Image Area -->
+            <div class="h-32 w-full bg-cover bg-center relative"
+                data-alt="Abstract neon lights at a music festival concert"
+                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC8IP4Nt0PKPodzpcFbFvd2Ubaa9qJ1TnSNgZNlCbPFTckv_u0avuLhHWQ9mR1tdt6sSIg_7NyMYanTxbpNJWhFjZKkEg0lKhiixlHdEahElvycY7jG2ZkBQLQTkhCtEvH8ol1zLYPS9ndUU4-n-5hHxpGOgM8hELcBTfIKq7wU2exisdoTV8o4-0UipYbLLUum55ZN6eLhvPzhJu5Bru5BxB735dZNPLiSA5sYGoOXMMs3xSw4vq-O5B22FDl0nAN5jleWnOp1Uxo");'>
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-dark to-transparent"></div>
+                <div class="absolute bottom-4 left-4">
+                    <h4 class="text-white text-xl font-bold leading-tight shadow-black drop-shadow-md">Neon Nights Music
+                        Fest</h4>
+                    <p class="text-text-secondary text-sm mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        Tonight, 8:00 PM
+                    </p>
+                </div>
+            </div>
+            <!-- Metrics Body -->
+            <div class="p-5 pt-2">
+                <div class="flex items-center justify-between gap-6">
+                    <!-- Left: Stats -->
+                    <div class="flex-1 space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-text-secondary">Capacity Status</span>
+                                <span class="text-white font-mono">450/500</span>
+                            </div>
+                            <div class="w-full bg-surface-highlight rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-text-secondary">Checked In</p>
+                                <p class="text-xl font-bold text-white tabular-nums">120</p>
+                            </div>
+                            <div class="h-8 w-[1px] bg-white/10"></div>
+                            <div>
+                                <p class="text-xs text-text-secondary">Pending</p>
+                                <p class="text-xl font-bold text-text-secondary tabular-nums">330</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right: Visual Chart -->
+                    <div class="shrink-0 flex flex-col items-center gap-2">
+                        <div aria-label="Donut chart showing 24% check-in rate" class="donut-chart" role="img">
+                            <div class="donut-content">
+                                <span class="text-sm font-bold text-white">24%</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-text-secondary uppercase tracking-wider font-semibold">Entry
+                            Rate</span>
+                    </div>
+                </div>
+                <!-- Action Button -->
+                <button
+                    class="mt-6 w-full py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                    <span class="material-symbols-outlined">qr_code_scanner</span>
+                    Quick Scan Entry
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Recent Activity Feed -->
+    <div class="px-4 mt-8">
+        <h3 class="text-lg font-bold text-white mb-4">Recent Activity</h3>
+        <div class="flex flex-col gap-3">
+            <!-- Item 1 -->
+            <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-dark/50 transition-colors">
+                <div class="rounded-full bg-green-500/20 p-2 text-green-500 shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]">sell</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-white font-medium truncate"><span class="font-bold">Sarah Jenkins</span>
+                        bought 2 VIP tickets</p>
+                    <p class="text-xs text-text-secondary mt-0.5">Neon Nights Music Fest</p>
+                </div>
+                <span class="text-xs text-text-secondary whitespace-nowrap">2m ago</span>
+            </div>
+            <!-- Item 2 -->
+            <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-dark/50 transition-colors">
+                <div class="rounded-full bg-purple-500/20 p-2 text-purple-400 shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]">reviews</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-white font-medium truncate">New 5-star feedback received</p>
+                    <p class="text-xs text-text-secondary mt-0.5">Jazz in the Park</p>
+                </div>
+                <span class="text-xs text-text-secondary whitespace-nowrap">15m ago</span>
+            </div>
+            <!-- Item 3 -->
+            <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-dark/50 transition-colors">
+                <div class="rounded-full bg-primary/20 p-2 text-primary shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]">person_add</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-white font-medium truncate">Check-in started by <span class="font-bold">Mike
+                            T.</span></p>
+                    <p class="text-xs text-text-secondary mt-0.5">Neon Nights Music Fest</p>
+                </div>
+                <span class="text-xs text-text-secondary whitespace-nowrap">1h ago</span>
+            </div>
+        </div>
+    </div>
+    <!-- Floating Action Button -->
+    <button
+        class="fixed bottom-24 right-4 z-30 flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-[0_4px_14px_rgba(19,164,236,0.4)] hover:shadow-[0_6px_20px_rgba(19,164,236,0.6)] hover:bg-primary/90 transition-all active:scale-95 group">
+        <span class="material-symbols-outlined text-[32px] transition-transform group-hover:rotate-90">add</span>
+        <span class="sr-only">Create Event</span>
+    </button>
+    <!-- Bottom Navigation -->
+    <div
+        class="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-white/5 pb-6 pt-3 px-6 z-40 backdrop-blur-lg bg-opacity-95">
+        <div class="flex items-center justify-between max-w-md mx-auto">
+            <button class="flex flex-col items-center gap-1 text-primary w-16">
+                <span class="material-symbols-outlined text-[26px] fill-current">dashboard</span>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">event</span>
+                <span class="text-[10px] font-medium">Events</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">bar_chart</span>
+                <span class="text-[10px] font-medium">Feedback</span>
+            </button>
+            <button
+                class="flex flex-col items-center gap-1 text-text-secondary hover:text-white w-16 transition-colors">
+                <span class="material-symbols-outlined text-[26px]">settings</span>
+                <span class="text-[10px] font-medium">Settings</span>
+            </button>
+        </div>
+    </div>
+</body>
+
+</html>

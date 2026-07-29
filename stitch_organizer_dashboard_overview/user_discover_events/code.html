@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>SortMyScene - User Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                        "surface-dark": "#192b33",
+                        "surface-input": "#233c48",
+                        "text-secondary": "#92b7c9",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { min-height: 100vh; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Desktop / Laptop Responsive Styles */
+        @media (min-width: 1024px) {
+            .app-shell { display: flex; flex-direction: row; max-width: 100% !important; padding-bottom: 0 !important; }
+            .bottom-nav { position: fixed; top: 0; left: 0; bottom: 0; right: auto; width: 220px; flex-direction: column; border-top: none; border-right: 1px solid rgba(255,255,255,0.05); padding: 2rem 0; justify-content: flex-start; gap: 0.5rem; }
+            .bottom-nav .nav-inner { flex-direction: column; max-width: 100%; height: auto; gap: 0.25rem; padding: 0 0.75rem; }
+            .bottom-nav .nav-inner a { flex-direction: row; justify-content: flex-start; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; width: 100%; }
+            .bottom-nav .nav-inner a span.nav-label { font-size: 0.875rem; }
+            .bottom-nav .nav-inner a:hover { background: rgba(35,60,72,0.5); }
+            .main-content { margin-left: 220px; max-width: 1200px; width: 100%; margin-right: auto; }
+            .upcoming-grid { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        }
+        @media (min-width: 1440px) {
+            .upcoming-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+    <div class="app-shell relative flex min-h-screen w-full flex-col overflow-x-hidden lg:max-w-none max-w-md mx-auto shadow-2xl pb-24">
+
+        <!-- Header -->
+        <div class="main-content">
+        <header class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md pt-4">
+            <div class="flex items-center p-4 pb-2 justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="userAvatar"
+                        class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20"></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-text-secondary font-medium">Welcome back,</span>
+                        <h2 id="userName" class="text-base font-bold leading-tight tracking-tight">...</h2>
+                    </div>
+                </div>
+                <button onclick="DB.logout()"
+                    class="relative flex items-center justify-center rounded-full size-10 bg-surface-input/50 text-white hover:bg-surface-input transition-colors">
+                    <span class="material-symbols-outlined text-primary">logout</span>
+                </button>
+            </div>
+            <!-- Search -->
+            <div class="px-4 pb-4 pt-1">
+                <div class="relative flex w-full items-center rounded-xl bg-surface-input/50 h-12">
+                    <span class="material-symbols-outlined absolute left-4 text-text-secondary">search</span>
+                    <input
+                        class="w-full bg-transparent border-none text-white placeholder:text-text-secondary px-4 pl-12 focus:ring-0"
+                        placeholder="Find concerts, workshops..." />
+                    <span class="material-symbols-outlined absolute right-4 text-primary">tune</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Categories -->
+        <div class="flex gap-3 px-4 py-2 overflow-x-auto no-scrollbar snap-x">
+            <button onclick="filterEvents('All')"
+                class="snap-start flex h-9 shrink-0 items-center justify-center rounded-full bg-primary px-5 text-white text-sm font-semibold">All</button>
+            <button onclick="filterEvents('Music')"
+                class="snap-start flex h-9 shrink-0 items-center justify-center rounded-full bg-surface-input px-5 text-text-secondary text-sm font-medium">Music</button>
+            <button onclick="filterEvents('Tech')"
+                class="snap-start flex h-9 shrink-0 items-center justify-center rounded-full bg-surface-input px-5 text-text-secondary text-sm font-medium">Tech</button>
+            <button onclick="filterEvents('Arts')"
+                class="snap-start flex h-9 shrink-0 items-center justify-center rounded-full bg-surface-input px-5 text-text-secondary text-sm font-medium">Arts</button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <main class="flex-1 flex flex-col gap-6 pt-4">
+            <!-- Featured Section -->
+            <section class="flex flex-col gap-3">
+                <div class="px-4 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Featured Event</h2>
+                </div>
+                <div id="featuredContainer" class="px-4"></div>
+            </section>
+
+            <!-- Upcoming Events List -->
+            <section class="flex flex-col gap-4 pb-4">
+                <div class="px-4">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Upcoming</h2>
+                </div>
+                <div id="upcomingContainer" class="upcoming-grid flex flex-col gap-4 px-4"></div>
+            </section>
+        </main>
+
+        </main>
+
+        <!-- Purchase Modal (Multi-step) -->
+        <div id="purchaseModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm modal-backdrop" onclick="closePurchaseModal()"></div>
+            <div class="relative bg-surface-dark border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all scale-95 opacity-0" id="purchaseModalContent">
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-white/5 relative bg-gradient-to-br from-surface-dark to-surface-input/50 pl-14">
+                    <button onclick="closePurchaseModal()" class="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5 focus:outline-none z-10">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                    <!-- Back button for Step -->
+                    <button id="modalBackBtn" onclick="goToForm()" class="absolute top-4 left-4 text-text-secondary hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5 focus:outline-none z-10 hidden">
+                        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                    </button>
+                    <h3 id="modalMainTitle" class="text-2xl font-black text-white mb-1 transition-all">Buy Tickets</h3>
+                    <p id="modalEventTitle" class="text-text-secondary text-sm font-medium pr-8 truncate">Event Title</p>
+                </div>
+                
+                <!-- STEP 1: QUANTITY -->
+                <div id="modalStep1" class="block transition-all">
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-8">
+                            <div>
+                                <span class="block text-white font-bold mb-1">Quantity</span>
+                                <span class="text-xs text-text-secondary">How many tickets?</span>
+                            </div>
+                            <div class="flex items-center gap-4 bg-surface-input px-2 py-1.5 rounded-xl border border-white/5 shadow-inner">
+                                <button onclick="updateQuantity(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-white/10 text-white transition-colors shadow-sm active:scale-95 focus:outline-none">
+                                    <span class="material-symbols-outlined text-[18px]">remove</span>
+                                </button>
+                                <span id="ticketQuantity" class="w-6 text-center text-lg font-black text-white select-none">1</span>
+                                <button onclick="updateQuantity(1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-dark hover:bg-white/10 text-white transition-colors shadow-sm active:scale-95 focus:outline-none">
+                                    <span class="material-symbols-outlined text-[18px]">add</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="bg-surface-input/50 rounded-2xl p-4 border border-white/5 shadow-inner">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm text-text-secondary font-medium" id="modalPriceLabel">Price per ticket</span>
+                                <span class="text-sm font-bold text-white bg-surface-dark px-2 py-0.5 rounded-md" id="modalUnitPrice">₹0</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-3 border-t border-white/5">
+                                <span class="text-base text-white font-semibold flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[18px] text-primary">receipt_long</span>
+                                    Total Amount
+                                </span>
+                                <span class="text-xl md:text-2xl font-black text-primary drop-shadow-sm" id="modalTotalPrice">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-6 pt-2 bg-gradient-to-t from-surface-dark to-transparent">
+                        <button onclick="confirmPurchase()" id="confirmPurchaseBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(19,164,236,0.25)] hover:shadow-[0_0_30px_rgba(19,164,236,0.4)] active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none">
+                            <span id="btnAmountText">Pay ₹0</span>
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: BOOKING DETAILS -->
+                <div id="modalStep2" class="hidden transition-all flex-col h-full max-h-[70vh]">
+                    <!-- Scrollable Form Area -->
+                    <div class="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
+                        
+                        <!-- People Attending -->
+                        <div>
+                            <span class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">People Attending</span>
+                            <div class="relative">
+                                <select id="attendingSelect" onchange="handleAttendingChange(this.value)" class="w-full bg-surface-input px-4 py-3 rounded-xl border border-white/5 text-white font-medium appearance-none focus:outline-none focus:border-primary/50 transition-colors cursor-pointer">
+                                    <option value="1">1 person</option>
+                                    <option value="2">2 people</option>
+                                    <option value="3">3 people</option>
+                                    <option value="4">4 people</option>
+                                    <option value="5">5 people</option>
+                                    <option value="6">6 people</option>
+                                    <option value="7">7 people</option>
+                                    <option value="8">8 people</option>
+                                    <option value="9">9 people</option>
+                                    <option value="10">10 people</option>
+                                </select>
+                                <span class="material-symbols-outlined text-text-secondary opacity-50 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">keyboard_arrow_down</span>
+                            </div>
+                        </div>
+
+                        <!-- Your Details -->
+                        <div>
+                            <span class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Your Details</span>
+                            <div class="space-y-3">
+                                <input type="text" id="mainUserName" placeholder="Full name" class="w-full bg-surface-input border border-white/5 rounded-xl px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
+                                <input type="number" id="mainUserAge" placeholder="Age" class="w-full bg-surface-input border border-white/5 rounded-xl px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
+                            </div>
+                        </div>
+
+                        <!-- Guests Container -->
+                        <div id="guestsContainer" class="space-y-6">
+                            <!-- Injected dynamically -->
+                        </div>
+
+                        <!-- QR Preference -->
+                        <div>
+                            <span class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">QR Preference</span>
+                            <div class="w-full bg-surface-input px-4 py-3 rounded-xl border border-primary/30 flex flex-col gap-1 cursor-pointer transition-colors bg-primary/5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-4 h-4 rounded-full border-4 border-surface-input bg-primary ring-1 ring-primary/50"></div>
+                                    <span class="text-white font-medium text-sm">Separate QR per person</span>
+                                </div>
+                                <span class="text-[11px] text-text-secondary ml-7">Each attendee gets their own ticket</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Footer -->
+                    <div class="p-6 py-4 bg-gradient-to-t from-surface-dark to-surface-dark border-t border-white/5 shrink-0 z-10 relative">
+                        <button onclick="goToSummary()" id="continueBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] border border-white/10 focus:outline-none shadow-[0_0_20px_rgba(19,164,236,0.25)]">
+                            <span>Review Order</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        </div><!-- end .main-content -->
+        <nav
+            class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-background-dark/90 backdrop-blur-lg border-t border-white/5 pb-6">
+            <div class="nav-inner flex justify-around items-center h-16 max-w-md mx-auto w-full px-2">
+                <a class="flex flex-col items-center gap-1 text-primary" href="#">
+                    <span class="material-symbols-outlined filled"
+                        style="font-variation-settings: 'FILL' 1;">home</span>
+                    <span class="nav-label text-[10px] font-medium">Discover</span>
+                </a>
+                <a class="flex flex-col items-center gap-1 text-text-secondary hover:text-white"
+                    href="../user_qr_entry_ticket/code.html">
+                    <span class="material-symbols-outlined">confirmation_number</span>
+                    <span class="nav-label text-[10px] font-medium">Tickets</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <script src="../../js/db.js"></script>
+    <script>
+        // Auth Check
+        const currentUser = DB.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'user') {
+            window.location.href = '../../auth.html';
+        }
+
+        document.getElementById('userName').textContent = currentUser.name.split(' ')[0] + '!';
+        document.getElementById('userAvatar').style.backgroundImage = `url('${currentUser.avatar}')`;
+
+        // Render Events
+        function renderEvents(category = 'All') {
+            const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+            const featured = events[0]; // Just picking first as featured
+            const upcoming = events.slice(1);
+
+            // Featured Render
+            if (category === 'All' || featured.category === category) {
+                document.getElementById('featuredContainer').innerHTML = `
+                <div class="group relative flex flex-col rounded-3xl bg-surface-dark overflow-hidden shadow-2xl border border-white/5 mt-2">
+                    <div class="relative h-56 md:h-72 lg:h-80 w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('${featured.image}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/60 to-transparent bg-opacity-90"></div>
+                        <div class="absolute top-4 left-4 bg-black/40 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-lg z-10 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider">Featured</span>
+                        </div>
+                    </div>
+                    <div class="p-5 md:p-8 relative -mt-24 md:-mt-32 z-10">
+                        <div class="flex justify-between items-end mb-4 gap-4">
+                            <div class="flex-1">
+                                <h3 class="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight drop-shadow-lg">${featured.title}</h3>
+                                <div class="flex items-center gap-1.5 text-text-secondary text-sm md:text-base font-medium">
+                                    <span class="material-symbols-outlined text-[18px] md:text-[22px]">location_on</span>
+                                    <span>${featured.location}</span>
+                                </div>
+                            </div>
+                            <div class="bg-surface-input/90 backdrop-blur-md p-3 md:p-4 rounded-2xl flex flex-col items-center min-w-[70px] md:min-w-[80px] border border-white/10 shadow-xl">
+                                <span class="text-[10px] md:text-xs font-bold text-text-secondary uppercase tracking-wider mb-0.5">Cap</span>
+                                <span class="text-xl md:text-2xl font-black text-primary">${featured.capacity}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-6 pt-6 border-t border-white/10 gap-4">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Price</span>
+                                <span class="text-2xl md:text-3xl font-black text-white">${featured.price === 0 ? 'Free' : '₹' + featured.price}</span>
+                            </div>
+                            <button onclick="openPurchaseModal('${featured.id}')" class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-8 rounded-xl text-sm md:text-base transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5">
+                                Register Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }
+
+            // Upcoming Render
+            const container = document.getElementById('upcomingContainer');
+            container.innerHTML = '';
+            upcoming.forEach(event => {
+                if (category !== 'All' && event.category !== category) return;
+                const priceDisplay = event.price === 0 ? 'Free' : '₹' + event.price;
+                const html = `
+                <div class="group flex flex-row gap-4 bg-surface-dark p-3 lg:p-4 rounded-2xl md:rounded-3xl border border-white/5 shadow-sm hover:border-white/10 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer" onclick="openPurchaseModal('${event.id}')">
+                    <div class="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-xl md:rounded-2xl bg-cover bg-center overflow-hidden relative" style="background-image: url('${event.image}');">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300"></div>
+                    </div>
+                    <div class="flex flex-col flex-1 justify-between py-1 lg:py-2">
+                        <div>
+                            <div class="flex flex-wrap justify-between items-start mb-2 gap-2">
+                                <span class="text-primary text-[10px] font-black uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded text-primary">${event.category || 'Event'}</span>
+                                <span class="text-text-secondary text-xs font-semibold bg-surface-input px-2 py-1 rounded-md opacity-80 whitespace-nowrap">${event.time}</span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-bold text-white line-clamp-1 group-hover:text-primary transition-colors pr-2">${event.title}</h3>
+                            <p class="text-text-secondary text-xs sm:text-sm mt-1 mb-2 font-medium truncate">${event.date} • ${event.location}</p>
+                        </div>
+                        <div class="flex justify-between items-end mt-2">
+                            <span class="text-sm sm:text-base text-white font-bold">${priceDisplay}</span>
+                            <button class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-surface-input text-primary text-xs font-bold hover:bg-primary hover:text-white transition-colors">
+                                Register
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+                container.innerHTML += html;
+            });
+        }
+
+        renderEvents();
+
+        function filterEvents(cat) { renderEvents(cat); }
+
+        let selectedEventId = null;
+        let selectedQuantity = 1;
+        let selectedUnitPrice = 0;
+
+        function goToSummary() {
+            document.getElementById('modalStep2').classList.add('hidden');
+            document.getElementById('modalStep2').classList.remove('flex');
+            document.getElementById('modalStep1').classList.remove('hidden');
+            document.getElementById('modalMainTitle').textContent = 'Confirm Payment';
+            document.getElementById('modalBackBtn').classList.remove('hidden');
+        }
+
+        function goToForm() {
+            document.getElementById('modalStep1').classList.add('hidden');
+            document.getElementById('modalStep2').classList.remove('hidden');
+            document.getElementById('modalStep2').classList.add('flex');
+            document.getElementById('modalMainTitle').textContent = 'Complete Booking';
+            document.getElementById('modalBackBtn').classList.add('hidden');
+            
+            document.getElementById('attendingSelect').value = selectedQuantity;
+            
+            // Auto-fill user name if available
+            if (!document.getElementById('mainUserName').value) {
+                document.getElementById('mainUserName').value = currentUser ? currentUser.name : '';
+            }
+            
+            renderGuestInputs();
+        }
+
+        function handleAttendingChange(val) {
+            const newQ = parseInt(val);
+            const delta = newQ - selectedQuantity;
+            updateQuantity(delta);
+            renderGuestInputs();
+        }
+
+        function renderGuestInputs() {
+            const guestsContainer = document.getElementById('guestsContainer');
+            
+            // Save existing values to prevent losing them on re-render
+            const existingData = {};
+            for(let i=1; i<=10; i++) {
+                const nameInp = document.getElementById(`guestName${i}`);
+                const ageInp = document.getElementById(`guestAge${i}`);
+                if (nameInp) existingData[`guestName${i}`] = nameInp.value;
+                if (ageInp) existingData[`guestAge${i}`] = ageInp.value;
+            }
+
+            guestsContainer.innerHTML = '';
+            for(let i = 1; i < selectedQuantity; i++) {
+                guestsContainer.innerHTML += `
+                    <div>
+                        <span class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Guest ${i}</span>
+                        <div class="space-y-3">
+                            <input type="text" id="guestName${i}" value="${existingData[`guestName${i}`] || ''}" placeholder="Full name" class="w-full bg-surface-input border border-white/5 rounded-xl px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
+                            <input type="number" id="guestAge${i}" value="${existingData[`guestAge${i}`] || ''}" placeholder="Age" class="w-full bg-surface-input border border-white/5 rounded-xl px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-primary/50 transition-colors">
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateQuantity(delta) {
+            const newQ = selectedQuantity + delta;
+            if (newQ >= 1 && newQ <= 10) {
+                selectedQuantity = newQ;
+                document.getElementById('ticketQuantity').textContent = selectedQuantity;
+                updateModalTotal();
+            }
+        }
+
+        function updateModalTotal() {
+            const total = selectedQuantity * selectedUnitPrice;
+            document.getElementById('modalTotalPrice').textContent = total === 0 ? 'Free' : '₹' + total;
+            
+            const btnText = document.getElementById('btnAmountText');
+            if (total === 0) {
+                btnText.textContent = 'Get Free Tickets';
+            } else {
+                btnText.textContent = 'Pay ₹' + total;
+            }
+        }
+
+        function closePurchaseModal() {
+            const modal = document.getElementById('purchaseModal');
+            const content = document.getElementById('purchaseModalContent');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function openPurchaseModal(eventId) {
+            const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+
+            selectedEventId = eventId;
+            selectedQuantity = 1;
+            selectedUnitPrice = event.price || 0;
+
+            document.getElementById('modalEventTitle').textContent = event.title;
+            document.getElementById('ticketQuantity').textContent = '1';
+            document.getElementById('modalUnitPrice').textContent = selectedUnitPrice === 0 ? 'Free' : '₹' + selectedUnitPrice;
+            
+            goToForm();
+            updateModalTotal();
+
+            const modal = document.getElementById('purchaseModal');
+            const content = document.getElementById('purchaseModalContent');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Trigger animation
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function confirmPurchase() {
+            const btn = document.getElementById('confirmPurchaseBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Processing...';
+
+            setTimeout(() => {
+                const regs = JSON.parse(localStorage.getItem(DB.KEYS.REGISTRATIONS)) || [];
+                const newReg = {
+                    id: 'sms-' + Math.floor(1000 + Math.random() * 9000),
+                    event_id: selectedEventId,
+                    user_id: currentUser.id,
+                    status: 'pending',
+                    quantity: selectedQuantity,
+                    total_price: selectedQuantity * selectedUnitPrice,
+                    timestamp: new Date().toISOString()
+                };
+                regs.unshift(newReg);
+                localStorage.setItem(DB.KEYS.REGISTRATIONS, JSON.stringify(regs));
+
+                // Update event ticket count
+                const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+                const event = events.find(e => e.id === selectedEventId);
+                if (event) {
+                    event.tickets_sold = (event.tickets_sold || 0) + selectedQuantity;
+                    localStorage.setItem(DB.KEYS.EVENTS, JSON.stringify(events));
+                }
+
+                closePurchaseModal();
+                alert('Registration Successful! Redirecting to ticket...');
+                window.location.href = '../user_qr_entry_ticket/code.html';
+            }, 800);
+        }
+    </script>
+    <script src="../../js/db.js"></script>
+    <!-- Modal logic imported along with db -->
+</body>
+</html>

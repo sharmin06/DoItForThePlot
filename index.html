@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoItForThePlot - Portal</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-dark": "#101c22",
+                        "surface-dark": "#192b33",
+                        "surface-hover": "#233c48",
+                        "text-secondary": "#92b7c9",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #101c22;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(19, 164, 236, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(19, 164, 236, 0.05) 0%, transparent 40%);
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen flex flex-col items-center justify-center p-6 bg-background-dark text-white selection:bg-primary selection:text-white">
+
+    <div class="max-w-4xl w-full flex flex-col gap-10">
+
+        <!-- Header -->
+        <header class="text-center flex flex-col gap-4">
+            <img src="logo.png" alt="DoItForThePlot Logo" class="h-24 md:h-28 mx-auto mb-2 drop-shadow-xl object-contain">
+            <h1
+                class="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-text-secondary">
+                DoItForThePlot
+            </h1>
+            <p class="text-text-secondary text-lg max-w-2xl mx-auto">
+                Welcome to your unified workspace. Select a module to get started.
+            </p>
+        </header>
+
+        <!-- Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- User Discovery Module -->
+            <a href="auth.html" onclick="localStorage.setItem('redirect_role', 'user')"
+                class="group relative flex flex-col gap-4 p-6 rounded-3xl bg-surface-dark border border-white/5 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1">
+                <div
+                    class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                    <span class="material-symbols-outlined text-purple-400 text-3xl">explore</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold mb-2 group-hover:text-primary transition-colors">Discover Events</h2>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Browse upcoming concerts, workshops, and gatherings. Book tickets and manage your schedule.
+                    </p>
+                </div>
+                <div class="mt-auto pt-4 flex items-center text-sm font-semibold text-purple-400">
+                    Login to Discover <span
+                        class="material-symbols-outlined text-lg ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </div>
+            </a>
+
+            <!-- Organizer Dashboard Module -->
+            <a href="auth.html" onclick="localStorage.setItem('redirect_role', 'organizer')"
+                class="group relative flex flex-col gap-4 p-6 rounded-3xl bg-surface-dark border border-white/5 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1">
+                <div
+                    class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <span class="material-symbols-outlined text-primary text-3xl">dashboard</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold mb-2 group-hover:text-primary transition-colors">Organizer Dashboard
+                    </h2>
+                    <p class="text-text-secondary text-sm leading-relaxed">
+                        Manage your events, track ticket sales, view analytics, and handle attendee lists.
+                    </p>
+                </div>
+                <div class="mt-auto pt-4 flex items-center text-sm font-semibold text-primary">
+                    Login as Organizer <span
+                        class="material-symbols-outlined text-lg ml-1 transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-text-secondary text-sm mt-8">
+            <p>&copy; 2024 DoItForThePlot. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>

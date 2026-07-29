@@ -1,0 +1,39 @@
+{
+    "name": "doitfortheplot-event-manager",
+    "version": 2,
+    "builds": [
+        {
+            "src": "index.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "auth.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "stitch_organizer_dashboard_overview/organizer_dashboard_overview/code.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "stitch_organizer_dashboard_overview/user_discover_events/code.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "stitch_organizer_dashboard_overview/user_qr_entry_ticket/code.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "stitch_organizer_dashboard_overview/scanner.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "stitch_organizer_dashboard_overview/feedback.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "js/db.js",
+            "use": "@vercel/static"
+        }
+    ],
+    "cleanUrls": true
+}

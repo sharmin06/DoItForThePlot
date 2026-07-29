@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>User QR Entry Ticket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                        "card-dark": "#192b33",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"], "mono": ["monospace"] },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .ticket-notch-l {
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #101c22;
+        }
+
+        .ticket-notch-r {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #101c22;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.02);
+                opacity: 0.95;
+            }
+        }
+
+        .qr-breathe {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        body {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white min-h-screen flex flex-col overflow-x-hidden">
+
+    <div
+        class="flex items-center justify-between p-4 sticky top-0 z-10 bg-background-light dark:bg-background-dark/95 backdrop-blur-sm">
+        <button onclick="window.location.href='../user_discover_events/code.html'"
+            class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h2 class="text-lg font-bold leading-tight tracking-tight">My Ticket</h2>
+        <div class="size-10"></div>
+    </div>
+
+    <div class="flex-1 flex flex-col items-center justify-start p-4 pb-8 w-full max-w-md mx-auto" id="ticketContainer">
+        <!-- Ticket injected here -->
+        <p class="text-center text-text-secondary mt-10">Loading ticket...</p>
+    </div>
+
+    <script src="../../js/db.js"></script>
+    <script>
+        // Auth Check
+        const currentUser = DB.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'user') {
+            window.location.href = '../../auth.html';
+        }
+
+        // Get latest registration
+        const regs = JSON.parse(localStorage.getItem(DB.KEYS.REGISTRATIONS));
+        const userRegs = regs.filter(r => r.user_id === currentUser.id);
+        const latestReg = userRegs[0]; // Sort by date if needed, assuming unshift adds to top
+
+        if (!latestReg) {
+            document.getElementById('ticketContainer').innerHTML = `
+            <div class="text-center mt-20">
+                <span class="material-symbols-outlined text-6xl text-text-secondary mb-4">confirmation_number</span>
+                <h3 class="text-xl font-bold text-white">No Tickets Found</h3>
+                <p class="text-text-secondary mt-2">Browse events to book your first ticket.</p>
+                <a href="../user_discover_events/code.html" class="inline-block mt-6 px-6 py-3 bg-primary rounded-xl text-white font-bold">Discover Events</a>
+            </div>
+        `;
+        } else {
+            const events = JSON.parse(localStorage.getItem(DB.KEYS.EVENTS));
+            const event = events.find(e => e.id === latestReg.event_id);
+
+            const statusColor = latestReg.status === 'checked-in' ? 'green' : 'yellow';
+            const statusText = latestReg.status === 'checked-in' ? 'Checked In' : 'Pending Check-in';
+            const statusIcon = latestReg.status === 'checked-in' ? 'check_circle' : 'hourglass_empty';
+
+            const html = `
+            <div class="w-full bg-white dark:bg-card-dark rounded-3xl overflow-hidden shadow-2xl flex flex-col relative group/ticket">
+                <div class="relative">
+                    <div class="h-48 w-full bg-center bg-cover relative" style="background-image: url('${event.image}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-2 text-center text-white min-w-[3.5rem]">
+                            <p class="text-xs font-medium uppercase tracking-wider">Event</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-4">
+                        <h1 class="text-2xl font-bold leading-tight mb-2 text-gray-900 dark:text-white">${event.title}</h1>
+                        <div class="flex flex-col gap-2 text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-xl">schedule</span>
+                                <span class="text-sm font-medium">${event.date} • ${event.time}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-xl">location_on</span>
+                                <span class="text-sm font-medium">${event.location}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative h-8 w-full flex items-center justify-center">
+                    <div class="w-full h-px border-t-2 border-dashed border-gray-300 dark:border-gray-600 mx-4"></div>
+                    <div class="ticket-notch-l"></div>
+                    <div class="ticket-notch-r"></div>
+                </div>
+
+                <div class="p-6 pb-8 flex flex-col items-center justify-center bg-gray-50 dark:bg-card-dark/50">
+                    <div class="p-3 bg-white rounded-2xl shadow-sm mb-4 qr-breathe">
+                        <div class="size-56 bg-white flex items-center justify-center overflow-hidden rounded-lg">
+                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${latestReg.id}" alt="QR Code" class="w-full h-full object-contain mix-blend-multiply">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-center gap-1 mb-6">
+                        <span class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Ticket ID</span>
+                        <h3 class="text-xl font-mono font-bold tracking-widest text-gray-900 dark:text-white select-all">${latestReg.id}</h3>
+                    </div>
+
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-${statusColor}-500/10 border border-${statusColor}-500/20">
+                        <div class="size-2.5 rounded-full bg-${statusColor}-500 ${latestReg.status !== 'checked-in' ? 'animate-pulse' : ''}"></div>
+                        <p class="text-${statusColor}-600 dark:text-${statusColor}-400 text-sm font-medium flex items-center gap-1">
+                            ${statusText}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full mt-6 space-y-3">
+                <button onclick="alert('Event details would open here')" class="w-full py-4 px-6 rounded-xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">info</span>
+                    View Event Details
+                </button>
+                ${latestReg.status === 'checked-in' ? `
+                <button onclick="window.location.href='../feedback.html'" class="w-full py-4 px-6 rounded-xl bg-purple-600 text-white font-bold text-base shadow-lg shadow-purple-500/20 hover:bg-purple-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">rate_review</span>
+                    Give Feedback
+                </button>
+                ` : ''}
+            </div>
+        `;
+            document.getElementById('ticketContainer').innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>
