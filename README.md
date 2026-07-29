@@ -193,6 +193,6 @@ cd DoItForThePlot
 
 **Project Type:** Semester 4 Group Project  
 **Domain:** Event Management System  
-**My Role:** Frontend Developer  
+**My Role:** Fullstack Developer  
 
 Developed collaboratively as part of academic coursework.
