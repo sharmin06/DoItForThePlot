@@ -196,3 +196,12 @@ cd DoItForThePlot
 **My Role:** Fullstack Developer  
 
 Developed collaboratively as part of academic coursework.
+
+---
+
+# 📬 Contact
+
+Feel free to connect with me for collaboration, discussions, or opportunities.
+
+🔗 LinkedIn: www.linkedin.com/in/sharmin-sayed-223381311 
+🔗 GitHub: https://github.com/sharmin06
