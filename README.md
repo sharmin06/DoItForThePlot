@@ -201,7 +201,17 @@ Developed collaboratively as part of academic coursework.
 
 # 📬 Contact
 
-Feel free to connect with me for collaboration, discussions, or opportunities.
+## Sharmin Sayed
 
-🔗 LinkedIn: www.linkedin.com/in/sharmin-sayed-223381311 
-🔗 GitHub: https://github.com/sharmin06
+📧 Email:  
+sharmins0206@gmail.com
+
+🔗 GitHub:  
+https://github.com/sharmin06
+
+🔗 LinkedIn:  
+https://www.linkedin.com/in/sharmin-sayed-223381311/
+
+---
+
+⭐ If you find this project interesting, consider giving the repository a star!
